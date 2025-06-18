@@ -24,12 +24,12 @@ jobs:
 
       - name: 📦 Install dependencies
         run: |
-          cd ../../project
+          cd ../../project/
           npm install
 
       - name: 🛠️ Build the app
         run: |
-          cd ../../project
+          cd ../../project/
           npm run build
 
       - name: ☁️ Sync to S3 bucket
