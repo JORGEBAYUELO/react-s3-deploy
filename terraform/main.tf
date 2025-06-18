@@ -2,6 +2,8 @@ data "aws_ssm_parameter" "cloudfront_distribution_id" {
   name = "/devops/react-app/cloudfront_distribution_id"
 }
 
+data "aws_caller_identity" "current" {}
+
 resource "aws_s3_bucket" "static_site" {
   bucket = "${var.project_name}-bucket"
 
@@ -113,3 +115,9 @@ resource "aws_cloudfront_distribution" "cdn" {
     Project     = var.project_name
   }
 }
+
+#resource "aws_wafv2_web_acl_association" "waf_cf_assoc" {
+#  provider     = aws.global
+#  resource_arn = "arn:aws:cloudfront::281156594845:distribution/EY67V4SL6SVRF"
+#  web_acl_arn  = "arn:aws:wafv2:us-east-1:281156594845:global/webacl/cloudfront-waf-acl/527ea93c-a9bf-49f8-8674-cfe222c430e0"
+#}
