@@ -46,6 +46,7 @@ jobs:
         run: |
           CF_ID=$(aws ssm get-parameter \
             --name "/devops/react-app/cloudfront_distribution_id" \
+            --region us-east-1 \
             --query "Parameter.Value" \
             --output text)
           echo "CF_ID=$CF_ID" >> $GITHUB_ENV
