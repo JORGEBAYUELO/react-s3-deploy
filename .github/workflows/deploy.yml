@@ -23,10 +23,14 @@ jobs:
           node-version: 20
 
       - name: 📦 Install dependencies
-        run: npm install
+        run: |
+          cd project
+          npm install
 
       - name: 🛠️ Build the app
-        run: npm run build
+        run: |
+          cd project
+          npm run build
 
       - name: ☁️ Sync to S3 bucket
         uses: jakejarvis/s3-sync-action@master
