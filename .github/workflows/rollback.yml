@@ -1,0 +1,62 @@
+name: 🔁 Rollback React App on S3
+
+on:
+  workflow_dispatch:
+
+jobs:
+  rollback:
+    name: Restore Previous Deployment
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🧰 Set up AWS CLI
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: 🔄 List files in S3
+        id: list_files
+        run: |
+          aws s3api list-object-versions \
+            --bucket react-app-deploy-jbayuelo-bucket \
+            --prefix "" \
+            --query 'Versions[?IsLatest==`true`].[Key,VersionId]' \
+            --output text > current_versions.txt
+
+      - name: 🔙 Restore previous versions
+        run: |
+          while read -r key current_version; do
+            previous_version=$(aws s3api list-object-versions \
+              --bucket react-app-deploy-jbayuelo-bucket \
+              --prefix "$key" \
+              --query 'Versions[?VersionId!=`'"$current_version"'` && IsLatest==`false`][0].VersionId' \
+              --output text)
+            
+            if [ "$previous_version" != "None" ]; then
+              echo "Restoring $key to version $previous_version"
+              aws s3api copy-object \
+                --bucket react-app-deploy-jbayuelo-bucket \
+                --copy-source "react-app-deploy-jbayuelo-bucket/$key?versionId=$previous_version" \
+                --key "$key"
+            else
+              echo "⚠️ No previous version found for $key"
+            fi
+          done < current_versions.txt
+
+      - name: Get CloudFront Distribution ID from SSM
+        id: get_cf_id
+        run: |
+          CF_ID=$(aws ssm get-parameter \
+            --name "/devops/react-app/cloudfront_distribution_id" \
+            --region us-east-1 \
+            --query "Parameter.Value" \
+            --output text)
+          echo "CF_ID=$CF_ID" >> $GITHUB_ENV
+
+      - name: 🚀 Invalidate CloudFront Cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "$CF_ID" \
+            --paths "/*" \
+            --no-cli-pager
