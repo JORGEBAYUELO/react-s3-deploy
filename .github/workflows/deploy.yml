@@ -12,7 +12,9 @@ jobs:
   deploy:
     name: Build and Deploy React App
     runs-on: ubuntu-latest
-
+    defaults:
+      run:
+        working-directory: project
     steps:
       - name: 📥 Checkout repository
         uses: actions/checkout@v3
@@ -23,14 +25,10 @@ jobs:
           node-version: 20
 
       - name: 📦 Install dependencies
-        run: |
-          cd ../../project/
-          npm install
+        run: npm install
 
       - name: 🛠️ Build the app
-        run: |
-          cd ../../project/
-          npm run build
+        run: npm run build
 
       - name: ☁️ Sync to S3 bucket
         uses: jakejarvis/s3-sync-action@master
