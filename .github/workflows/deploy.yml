@@ -41,12 +41,20 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           SOURCE_DIR: project/dist
 
+      - name: Get CloudFront Distribution ID from SSM
+        id: get_cf_id
+        run: |
+          CF_ID=$(aws ssm get-parameter \
+            --name "/devops/react-app/cloudfront_distribution_id" \
+            --query "Parameter.Value" \
+            --output text)
+          echo "CF_ID=$CF_ID" >> $GITHUB_ENV
+
       - name: 🔁 Invalidate CloudFront cache
         run: |
           aws cloudfront create-invalidation \
-            --distribution-id EY67V4SL6SVRF \
+            --distribution-id "$CF_ID" \
             --paths "/*" \
-            --region $AWS_REGION \
             --no-cli-pager
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

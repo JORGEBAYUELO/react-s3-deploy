@@ -1,3 +1,7 @@
+data "aws_ssm_parameter" "cloudfront_distribution_id" {
+  name = "/devops/react-app/cloudfront_distribution_id"
+}
+
 resource "aws_s3_bucket" "static_site" {
   bucket = "${var.project_name}-bucket"
 
