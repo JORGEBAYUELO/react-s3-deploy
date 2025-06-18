@@ -50,6 +50,10 @@ jobs:
             --query "Parameter.Value" \
             --output text)
           echo "CF_ID=$CF_ID" >> $GITHUB_ENV
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
 
       - name: 🔁 Invalidate CloudFront cache
         run: |
@@ -57,7 +61,4 @@ jobs:
             --distribution-id "$CF_ID" \
             --paths "/*" \
             --no-cli-pager
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
+
